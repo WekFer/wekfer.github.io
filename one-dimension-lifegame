@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Useful event target example</title>
+  </head>
+  <body>
+    <div style="text-align: center;">
+      <p id="p1">一维生命游戏1.1</p>
+     </div>
+    <div style="text-align: center;">
+     <canvas id="canvas" height="600" width="1000"></canvas>
+    </div>
+    <style>
+      html {
+        margin: 20px;
+        border: 4px solid pink;
+        padding: 10px;
+        width: 1100px;
+      }
+      p {
+          display: block;
+          margin-block-start: 0;
+          margin-block-end: 10px;
+          margin-inline-start: 0px;
+          margin-inline-end: 0px;
+      }
+    </style>
+    <script type="text/javascript">
+    (async()=>{
+      //设置画板
+      var canvas = document.getElementById("canvas");
+      var width = canvas.width;
+      var height = canvas.height;
+      var ctx = canvas.getContext('2d');
+      //设置行数、列数、希望继续往下滚动的行数、方框大小、刷新频率ms、colorState浮标floater
+      var sq = 2;
+      let row = Math.floor(height/sq)-50;
+      let column = 401;
+      let row_continue = 3400;
+      let frequent = 1;
+      let floater = 0;
+      //生成储存colorState的二维数组并初始化
+      var colorArr = new Array(); //先声明一维
+        for(var i=0; i < row; i++){ //一维长度为2
+          colorArr[i] = new Array(); // 再声明二维
+          for(var j=0; j < column; j++){ //二维长度为3
+            colorArr[i][j]=0;
+          }
+        }
+      //定义上一行的三个方框ColorState数组并初始化
+      var upperColor = [0,0,0];
+      //定义生命游戏规则函数，返回0或1，1是存活，0是死亡
+      function liveState(thisArr){
+        let liveArr = [0,1,0,1,1,0,1,0]
+        return liveArr[thisArr[0]*4+thisArr[1]*2+thisArr[2]];
+      }
+      //定义画黑方框函数，行数和列数从0开始计数
+      function drawSq(row,column){
+        //sq加1表示方框之间距离或者说空隙为1
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(1+column*sq, 1+row*sq, sq, sq); 
+      }
+      //定义画白方框函数
+      function cleanSq(row,column){
+        //sq加1表示方框之间距离或者说空隙为1
+        ctx.fillStyle = 'rgb(255, 255, 255)';
+        ctx.fillRect(1+column*sq, 1+row*sq, sq, sq); 
+      }
+      //画第0行并初始化为中间两个白色方框，其余黑色，用colorArr第0行记录colorState
+      for(i=0;i<column;i++){
+        let mid = (column-column%2)/2-1;
+        if(i!== mid&&i!==mid+2){
+          drawSq(0,i);
+          colorArr[0][i]=0;
+        }
+        else{colorArr[0][i]=1;}
+      }
+      //定义两个原始循环移位函数，以及衍生的上下左右四个函数
+      function mod_plus_1(num,length){
+        num++;
+        if(num === length){num = 0;}
+        return num;
+      }
+      function mod_minus_1(num,length){
+        if(num === 0){num = length;}
+        num--;
+        return num;
+      }
+      function mod_up(num){
+        return mod_minus_1(num,row);
+      }
+      function mod_down(num){
+        return mod_plus_1(num,row);
+      }
+      function mod_left(num){
+        return mod_minus_1(num,column);
+      }
+      function mod_right(num){
+        return mod_plus_1(num,column);
+      }
+      function mod_plus(num,k){
+        num += k;
+        if(num>=row){num -= row;}
+        return num;
+      }
+      //根据第i行生成第i+1行方框
+      for(i=0;i<row-1;i++){
+        //等待
+        await new Promise(r=>setTimeout(r,frequent));
+        //初始化upperColor
+        upperColor[0]=colorArr[i][column-1];
+        upperColor[1]=colorArr[i][0];
+        upperColor[2]=colorArr[i][1];
+        //生成第j列方框并记录colorState
+        for(j=0;j<column;j++){
+          if(liveState(upperColor)===0){
+            colorArr[i+1][j]=0;
+            drawSq(i+1,j);
+          }
+          else{
+            colorArr[i+1][j]=1;
+          }
+          //upperColor移位
+          upperColor[0]=upperColor[1];
+          upperColor[1]=upperColor[2];
+          upperColor[2]=colorArr[i][j+2];
+          if(j===column-2){upperColor[2]=colorArr[i][0];}
+        }
+      }
+      //已生成所有已有二维数组的colorState，现在先更新浮标floater所指向的一行
+      for(count=0;count<row_continue;count++){
+        let f_up = mod_up(floater);
+        upperColor[0]=colorArr[f_up][column-1];
+        upperColor[1]=colorArr[f_up][0];
+        upperColor[2]=colorArr[f_up][1];
+        for(j=0;j<column;j++){
+          if(liveState(upperColor)===0){
+            colorArr[floater][j]=0;
+          }
+          else{
+            colorArr[floater][j]=1;
+          }
+          //upperColor移位
+          upperColor[0]=upperColor[1];
+          upperColor[1]=upperColor[2];
+          upperColor[2]=colorArr[f_up][j+2];
+          if(j===column-2){upperColor[2]=colorArr[f_up][0];}
+        }
+        //然后根据最新colorState数组，更新所有方框
+        for(i=0;i<row;i++){
+          for(j=0;j<column;j++){
+            //判断当前格子是否需要更改
+            if(i!==0 && i!==row-1){
+             if(colorArr[mod_plus(i,floater+1)][j]===colorArr[mod_plus(i,floater)][j]){continue;}
+            }
+            if(colorArr[mod_plus(i,floater+1)][j]===0){drawSq(i,j);}
+            else{cleanSq(i,j);}
+          }
+        }
+        //更新floater
+        floater = mod_down(floater);
+        //等待
+        await new Promise(r=>setTimeout(r,frequent));
+      }
+    })()
+    </script>
+  </body>
+</html>
