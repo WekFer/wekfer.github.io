@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>随机编造佛经咒语0.0</title>
+    </head>
+    <body>
+        <p id="p1">随机编造佛经咒语0.0  后续期望功能：1.加上打字机一个字一个字出现文字的效果；2.加上奥特曼巨乘背景</p>
+        <p id="p2">（有怪莫怪，细孥仔唔识世界。。。。。。）</p>
+    </body>
+    <style>
+        html {
+          margin: 20px;
+          border: 4px solid pink;
+          padding: 10px;
+          width: 666px;
+        }
+        p {
+            display: block;
+            margin-block-start: 4px;
+            margin-block-end: 4px;
+        }
+    </style>
+    <script>
+        let sourcetext = "唵嘛呢叭咪吽南无喝啰怛那哆夜耶阿唎卢羯帝烁钵埵摩迦尼皤罚曳数写悉吉栗伊蒙室佛楞驮谨墀醯利沙咩他豆输朋逝孕伽特侄罗夷俱度阇陀地遮么穆隶参舍呼嚧娑苏弥瑟喻艺僧佉者波胜殿都漫多跋揭谛菩提萨婆诃";
+        let sourcelength = sourcetext.length;
+        //随机返回的是[0,length-1]
+        function randomint(length){
+            return Math.floor(Math.random() * length);
+        }
+        //随机返回的是[l,r]
+        function randomint2(l,r){
+            return Math.floor(Math.random() * (r-l+1))+l;
+        }
+        //构造随机咒语块，长度为3-7
+        function block(){
+            let blck = '';
+            let randomlength = randomint2(3,7);
+            for(let i=0;i<randomlength;i++){
+                blck += sourcetext[randomint(sourcelength)];
+            }
+            return blck;
+        }
+        //增加段落函数
+        function write(text){
+            var para = document.createElement('p');
+            para.textContent = text;
+            document.body.appendChild(para);
+        }
+        let namo = '南无';
+        let sapohe = '萨婆诃';
+        let blck = '';
+        //设定总行数范围
+        let rowcount = randomint2(15,20);
+        //先来4-6行南无
+        for(let i=0, row = randomint2(4,6); i<row; i++){
+            blck = namo + ' ' + ' ' + block();
+            write(blck);
+            rowcount--;
+        }
+        //写剩下的行数
+        for(let count=0;count<rowcount;count++){
+            blck = block();
+            write(blck);
+        }
+        write(sapohe);
+    </script>
+<!-- 以下代码用于去除重复字符
+    let i = '唵嘛呢叭咪吽南无喝啰怛那哆啰夜耶南无阿唎耶婆卢羯帝烁钵啰耶菩提萨埵婆耶摩诃萨埵婆耶摩诃迦卢尼迦耶唵萨皤啰罚曳数怛那怛写南无悉吉栗埵伊蒙阿唎耶婆卢吉帝室佛啰楞驮婆南无那啰谨墀醯利摩诃皤哆沙咩萨婆阿他豆输朋阿逝孕萨婆萨哆那摩婆萨哆那摩婆伽摩罚特豆怛侄他唵阿婆卢醯卢迦帝迦罗帝夷醯唎摩诃菩提萨埵萨婆萨婆摩啰摩啰摩醯摩醯唎驮孕俱卢俱卢羯蒙度卢度卢罚阇耶帝摩诃罚阇耶帝陀啰陀啰地唎尼室佛啰耶遮啰遮啰摩么罚摩啰穆帝隶伊醯伊醯室那室那阿啰参佛啰舍利罚沙罚参佛啰舍耶呼嚧呼嚧摩啰呼嚧呼嚧醯利娑啰娑啰悉唎悉唎苏嚧苏嚧菩提夜菩提夜菩驮夜菩驮夜弥帝唎夜那啰谨墀地利瑟尼那婆夜摩那娑婆诃悉陀夜娑婆诃摩诃悉陀夜娑婆诃悉陀喻艺室皤啰耶娑婆诃那啰谨墀娑婆诃摩啰那啰娑婆诃悉啰僧阿穆佉耶娑婆诃娑婆摩诃阿悉陀夜娑婆诃者吉啰阿悉陀夜娑婆诃波陀摩羯悉陀夜娑婆诃那啰谨墀皤伽啰耶娑婆诃摩婆利胜羯啰夜娑婆诃南无喝啰怛那哆啰夜耶南无阿唎耶婆嚧吉帝烁皤啰夜娑婆诃唵悉殿都漫多啰跋陀耶娑婆诃揭谛揭谛波罗揭谛波罗僧揭谛菩提萨婆诃';
+    let x = i[0];
+    for(c=1;c<i.length;c++){
+        let logic = 0;
+        for(judge=0;judge<x.length;judge++){
+            if(i[c]===x[judge]){
+                logic = 1;
+                break;
+            }
+        }
+        if(logic === 0){ x = x + i[c];}
+    }
+    --->
+</html>
