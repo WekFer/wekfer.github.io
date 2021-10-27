@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>sakura-falls-5centimeters-per-second</title>
+</head>
+<body>
+    <div id="float">
+        <div><p id="fivecm">5cm</p></div>
+        <div><canvas id="measure" width="300" height="80"></canvas></div>
+    </div>
+    <div id=serifu>
+        <p style="text-align: center;" id="jpSerifu">serifu</p>
+        <p style="text-align: center;" id="chSerifu">serifu</p>
+        <p style="text-align: center;" id="计划">计划：1. 键入秒五台词库，轮换播放</p>
+    </div>
+    <div id="stage">
+        <canvas id="myCanvas" width="1314" height="520"></canvas>
+        <canvas id="workCanvas" width="1314" height="520"></canvas>
+    </div>
+    <!-- 樱花的代码为&#127800 🌸 -->
+    <!-- CSS部分 -->
+    <style>
+    body {
+        margin: 20px;
+        border: 4px solid pink;
+        padding: 20px;
+        width: 1354px;
+    }
+    div#float {
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        text-align: center;
+        width: 300px;
+    }
+    div#serifu {
+        text-align: center;
+    }
+    div#stage {
+        position: relative;
+        text-align: center;
+    } 
+    #myCanvas { z-index: 2; }
+    #workCanvas { z-index: 1; }
+    </style>
+
+    <!-- javascript部分 -->
+    <script>
+        var myCanvas=document.getElementById("myCanvas");
+        var workCanvas=document.getElementById("workCanvas");
+        var width = myCanvas.width;
+        var height = myCanvas.height;
+        var myCtx = myCanvas.getContext("2d");
+        var workCtx = workCanvas.getContext("2d");
+        workCtx.textAlign = "center"; 
+        workCtx.textBaseline = "middle"; 
+        workCtx.save();
+        function randomInt2(min,max){return Math.floor(Math.random()*(max+1-min) + min);}
+        function randomFloat(min,max){return Math.random()*(max - min) + min; }
+        function cleanWork() { workCtx.clearRect(0,0,width,height); }
+        //定义透明度函数，根据樱花在垂直方向上的位置，返回一个透明值，0为完全透明，1为完全不透明
+        function transparentChange(y,size){
+            let startHeight = size;
+            let changeHeight = size*2;
+            if(y<startHeight){return 0;}
+            if(y<startHeight+changeHeight){return (y-startHeight)/changeHeight;}
+            else if(y<height-startHeight-changeHeight){return 1;}
+            else if(y<height-startHeight){return (height-y-startHeight)/changeHeight;}
+            else {return 0;}
+        }
+        function Sakura(x, y, spin, speedY, speedSpin, size) {
+            this.x = x;
+            this.y = y;
+            this.spin = spin;
+            this.speedY = speedY;
+            this.speedSpin = speedSpin;
+            this.size = size;
+        }
+        Sakura.prototype.draw = function(){
+            workCtx.font = this.size + 'px serif';
+            workCtx.translate(this.x, this.y);
+            workCtx.rotate(this.spin);
+            workCtx.globalAlpha = transparentChange(this.y,this.size);
+            workCtx.fillText('🌸', 0, 0);
+            workCtx.resetTransform();
+            myCanvas.getContext("2d").drawImage(workCanvas,0,0);
+            cleanWork();
+            workCtx.restore();
+        }
+        Sakura.prototype.update = function(){
+            if(this.y>height-this.size/2){
+                this.x = randomFloat(0 + this.size, width - this.size);
+                this.y = this.y - height;
+            }
+            this.y += this.speedY;
+            this.spin += this.speedSpin; 
+            if(this.spin > Math.PI*2){this.spin -= Math.PI*2;}
+        }
+        let sakuras = [];
+        while (sakuras.length < 11) {
+            let size = randomInt2(30, 60);
+            let sakura = new Sakura(
+                randomFloat(0 + size, width - size),
+                randomFloat(0 + size, height - size),
+                Math.random(),
+                1,
+                randomFloat(-0.07, 0.07),
+                size
+            );
+            sakuras.push(sakura);
+        }
+        function loop(){
+            myCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            myCtx.fillRect(0, 0, width, height);
+            for (let i = 0; i < sakuras.length; i++) {
+                sakuras[i].draw();
+                sakuras[i].update();
+            }
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
