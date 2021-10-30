@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>endless-huge-depression</title>
+</head>
+<body>
+    <canvas id='myCanvas' width="225" height="225"></canvas>
+</body>
+<style>
+    body {
+        margin: 10px;
+        border: 6px solid black;
+        padding: 10px;
+        width: 225px;
+        height: 225px;
+    }
+</style>
+<script>
+    function Yi(x,y){
+        let dots = [
+        0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+        0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,
+        0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,
+        0,0,0,1,0,0,0,1,0,0,1,1,1,1,0,
+        0,0,0,1,1,1,0,1,0,0,1,0,0,1,0,
+        1,1,1,1,0,0,0,1,0,0,1,0,0,1,0,
+        0,0,0,1,0,1,0,1,0,0,1,0,0,1,0,
+        0,0,0,1,1,0,0,1,0,0,1,0,0,1,0,
+        0,0,0,1,0,0,0,1,0,0,1,0,0,1,0,
+        0,0,1,1,0,0,0,1,0,1,1,0,0,1,0,
+        1,1,0,1,0,0,0,1,1,0,1,0,0,1,0,
+        0,0,0,1,0,0,0,1,0,0,1,0,1,1,0,
+        0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,
+        0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,
+        0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,
+        ]
+        return dots[(x+y*15)];
+    }
+    function Yu(x,y){
+        let dots = [
+        0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,
+        0,1,1,1,1,1,1,1,0,1,0,0,0,1,0,
+        0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,
+        0,0,0,1,1,1,1,1,0,1,0,1,0,0,0,
+        0,0,1,0,1,0,0,1,0,1,0,1,0,0,0,
+        0,1,0,0,1,1,1,1,0,1,0,0,1,0,0,
+        0,0,0,0,1,0,0,1,0,1,1,0,0,1,0,
+        0,0,0,0,1,1,1,1,0,1,0,1,0,1,0,
+        0,0,0,0,1,0,0,1,0,1,0,0,1,1,0,
+        0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,
+        0,0,0,0,1,0,1,1,0,1,0,0,0,0,0,
+        0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+        ]
+        return dots[(x+y*15)];
+    }
+    let myCanvas = document.getElementById('myCanvas');
+    let ctx = myCanvas.getContext('2d');
+    function drawPixel(x,y,blackness){
+        let brightnessNum = Math.round((1-blackness)*255);
+        ctx.fillStyle = 'rgb('+brightnessNum+','+brightnessNum+','+brightnessNum+')';
+        ctx.fillRect(x, y, 1, 1);
+    }
+    //10进制和15进制转换
+    function toFifteen(a,b,c){
+        return ((a*15)+b)*15+c;
+    } 
+    function fromFifteen(num){
+        let digit = [0,0,0];
+        digit[2] = num % 15;
+        num = (num - digit[2])/15;
+        digit[1] = num % 15;
+        num = (num - digit[1])/15;
+        digit[0] = num % 15;
+        return digit;
+    }
+    //参数列表
+    const measure = 225; //当前正方形宽度
+    let countfilm = 0;//帧计数
+    let state = 0;//0为抑，1为郁
+    const slipConst = 20;//slip 循环计数器，每 slipConst 帧留1帧，跳过 slipConst-1 帧，只有 slip=0 时才画图
+    let slip = 0;
+    const magnifyRate = Math.pow(15,0.05);//每帧放大倍数，0.05 表示 20 帧放大 15 倍
+    let xLeft = xRight = yLeft = yRight = 0;//记录像素矩阵位置
+    let xOrigin = yOrigin = 0;//记录像素矩阵左上角原点
+    //迭代矩阵函数，返回 1 或 0，1 表示有像素点，0 表示无
+    function YiYuYi(x1,y1,x2,y2,x3,y3){
+        if(Yi(x1,y1)&&Yu(x2,y2)&&Yi(x3,y3)){return 1;}
+        else {return 0;}
+    }
+    function YuYiYu(x1,y1,x2,y2,x3,y3){
+        if(Yu(x1,y1)&&Yi(x2,y2)&&Yu(x3,y3)){return 1;}
+        else {return 0;}
+    }
+    function Blackness(x,y,filmRate,state){
+        let step = 15/filmRate;//像素矩阵宽度
+        xLeft = Math.ceil(xOrigin + step*x);
+        yLeft = Math.ceil(yOrigin + step*y);
+        xRight = Math.floor(xOrigin + step*x + step);
+        yRight = Math.floor(yOrigin + step*y + step);
+        let count = 0;//记录像素矩阵中 1 的个数
+        for(let i=xLeft;i<=xRight;i++){
+            for(let j=yLeft;j<=yRight;j++){
+                if(state === 0 && YiYuYi(
+                    fromFifteen(i)[0],fromFifteen(j)[0],
+                    fromFifteen(i)[1],fromFifteen(j)[1],
+                    fromFifteen(i)[2],fromFifteen(j)[2])){ count++; }
+                else if(state === 1 && YuYiYu(
+                    fromFifteen(i)[0],fromFifteen(j)[0],
+                    fromFifteen(i)[1],fromFifteen(j)[1],
+                    fromFifteen(i)[2],fromFifteen(j)[2])){ count++; }
+            }
+        }
+        return count/((xRight-xLeft+1)*(yRight-yLeft+1));
+    }
+
+    function loop(){
+        if(slip === 0){
+            console.log(countfilm);
+            let filmRate = Math.pow(magnifyRate,countfilm);
+            xOrigin = 1687-measure*15/2/filmRate;
+            yOrigin = 1687-measure*15/2/filmRate;
+            ctx.clearRect(0,0,225,225);
+            for(let i=0;i<225;i++){
+                for(let j=0;j<225;j++){
+                    const blackness = Blackness(i,j,filmRate,state);
+                    if(blackness !== 0){drawPixel(i,j,blackness);}
+                }
+            }
+            if(countfilm>14){
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + 0.12*(countfilm-14) +')';
+                ctx.fillRect(0, 0, 225, 225);
+            }
+            countfilm = (countfilm + 1) % 20;
+        if(countfilm === 0){state = 1 - state;}
+        }
+        slip = (slip + 1) % slipConst;
+        requestAnimationFrame(loop);
+    }
+    loop();
+</script>
+</html>
