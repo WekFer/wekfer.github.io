@@ -65,7 +65,7 @@
     let count = 0;//帧计数
     let state = 0;//0为抑，1为郁
     let slip = 0;//循环计数器，每3帧留1帧，跳过2帧，只有 slip=0 时才画图
-    let magnifyRate = Math.pow(15,0.05);//每帧放大倍数
+    let magnifyRate = Math.pow(15,0.025);//每帧放大倍数
     function modePlus(num, mode){
         num++;
         if(num === mode){num = 0;}
@@ -112,14 +112,14 @@
             else{
                 drawYu(measure*Math.pow(magnifyRate,count));
             }
-            if(count>14){
-                ctx.fillStyle = 'rgba(255, 255, 255, ' + 0.1*(count-14) +')';
+            if(count>30){
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + 0.06*(count-30) +')';
                 ctx.fillRect(0, 0, measure, measure);
             }
-            count = modePlus(count,20);
+            count = modePlus(count,40);
             if(count === 0){state = 1 - state;}
         }
-        slip = modePlus(slip,10);
+        slip = modePlus(slip,2);
         requestAnimationFrame(loop);
     }
     loop();
