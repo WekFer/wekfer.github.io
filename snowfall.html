@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>snowfall</title>
+</head>
+<body>
+    <div id="float">
+        <canvas id="workCanvas" width="30" height="30"></canvas>
+    </div>
+    <div id=serifu>
+        <p id="jpSerifu">\(ﾟ▽ﾟ\) 下雪啦 (/ﾟ▽ﾟ)/</p>
+    </div>
+    <div id="stage">
+        <canvas id="myCanvas" width="520" height="360"></canvas>
+    </div>
+    <!-- CSS部分 -->
+    <style>
+    body {
+        margin: 20px;
+        border: 6px solid rgb(163, 218, 240);
+        padding: 20px;
+        width: 520px;
+    }
+    div#float {
+        position: absolute;
+        top: 60px;
+        left: 50px;
+        text-align: center;
+    }
+    p#fivecm { margin: 0;}
+    #workCanvas { display: none;}
+    div#serifu { text-align: center;}
+    div#stage {
+        position: relative;
+    }
+    </style>
+
+    <!-- javascript部分 -->
+    <script>
+        var myCanvas=document.getElementById("myCanvas");
+        var workCanvas=document.getElementById("workCanvas");
+        var width = myCanvas.width;
+        var height = myCanvas.height;
+        var halfWorkWidth = Math.floor(workCanvas.width/2);
+        var myCtx = myCanvas.getContext("2d");
+        var workCtx = workCanvas.getContext("2d");
+        workCtx.textAlign = "center"; 
+        workCtx.textBaseline = "middle"; 
+        workCtx.save();
+        function randomInt2(min,max){return Math.floor(Math.random()*(max+1-min) + min);}
+        function randomFloat(min,max){return Math.random()*(max - min) + min; }
+        function cleanWork() { workCtx.clearRect(0,0,width,height); }
+        //定义透明度函数，返回一个透明值，0为完全透明，1为完全不透明
+        function transparentChange(y,size){
+            let startHeight = size;
+            let changeHeight = size*3;
+            if(y<startHeight){return 0;}
+            if(y<startHeight+changeHeight){return (y-startHeight)/changeHeight;}
+            else if(y<height-startHeight-changeHeight){return 1;}
+            else if(y<height-startHeight){return (height-y-startHeight)/changeHeight;}
+            else {return 0;}
+        }
+        function Sakura(x, y, spin, speedY, speedSpin, size) {
+            this.x = x;
+            this.y = y;
+            this.spin = spin;
+            this.speedY = speedY;
+            this.speedSpin = speedSpin;
+            this.size = size;
+        }
+        Sakura.prototype.draw = function(){
+            workCtx.font = this.size + 'px serif';
+            workCtx.translate(halfWorkWidth, halfWorkWidth);
+            workCtx.rotate(this.spin);
+            workCtx.globalAlpha = transparentChange(this.y,this.size);
+            workCtx.fillText('❄️', 0, 0);
+            workCtx.resetTransform();
+            myCanvas.getContext("2d").drawImage(workCanvas,this.x-halfWorkWidth,this.y-halfWorkWidth);
+            cleanWork();
+            workCtx.restore();
+        }
+        Sakura.prototype.update = function(){
+            if(this.y>height-this.size/2){
+                this.x = randomFloat(0 + this.size, width - this.size);
+                this.y = this.y - height;
+            }
+            this.y += this.speedY;
+            this.spin += this.speedSpin; 
+            if(this.spin > Math.PI*2){this.spin -= Math.PI*2;}
+        }
+        let sakuras = [];
+        while (sakuras.length < 66) {
+            let size = randomInt2(10, 20);
+            let sakura = new Sakura(
+                randomFloat(0 + size, width - size),
+                randomFloat(0 + size, height - size),
+                Math.random(),
+                1,
+                randomFloat(-0.07, 0.07),
+                size
+            );
+            sakuras.push(sakura);
+        }
+        function loop(){
+            myCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            myCtx.fillRect(0, 0, width, height);
+            for (let i = 0; i < sakuras.length; i++) {
+                sakuras[i].draw();
+                sakuras[i].update();
+            }
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
