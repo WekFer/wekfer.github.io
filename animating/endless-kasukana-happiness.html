@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>endless-kasukana-happiness</title>
+</head>
+<body>
+    <div>
+        <canvas id='myCanvas' width="75" height="75"></canvas>
+    </div>
+</body>
+<style>
+    body {
+        margin: 10px;
+        border: 6px solid black;
+        padding: 10px;
+        width: 75px;
+        height: 75px;
+    }
+</style>
+<script>
+    function Yi(x,y){
+        let dots = [
+        0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,
+        0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,
+        0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,
+        0,0,0,1,1,0,0,1,1,1,1,1,1,0,0,
+        0,0,0,1,0,1,0,0,0,1,0,0,1,0,0,
+        0,1,0,1,0,0,0,0,0,1,0,0,1,0,0,
+        0,1,0,1,0,0,0,0,0,1,0,0,1,0,0,
+        1,0,0,1,0,0,1,1,1,1,1,1,1,1,1,
+        0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,
+        0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,
+        0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,
+        0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,
+        0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,
+        0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,
+        0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,
+        ]
+        return dots[(x+y*15)];
+    }
+    function Yu(x,y){
+        let dots = [
+        0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,
+        0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,
+        0,0,1,1,1,1,0,1,0,0,0,0,0,0,0,
+        0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,
+        0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,
+        0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,
+        0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,
+        0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
+        0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,
+        0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,
+        0,0,0,0,1,0,0,1,0,0,0,1,0,0,0,
+        0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,
+        0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,
+        0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
+        ]
+        return dots[(x+y*15)];
+    }
+    let myCanvas = document.getElementById('myCanvas');
+    let ctx = myCanvas.getContext('2d');
+    const measure = 75; //当前矩形宽度
+    let count = 0;//帧计数
+    let state = 0;//0为快，1为乐
+    let slip = 0;//循环计数器，每3帧留1帧，跳过2帧，只有 slip=0 时才画图
+    let magnifyRate = Math.pow(15,0.025);//每帧放大倍数
+    let color = [255, 0, 0];
+    let bodyBorderColor = document.body;
+    bodyBorderColor.style.borderColor = 'rgb(' + color[0] + ', ' + color[1] + ', '+ color[2] + ')';
+    function colorDifferent([r, g, b]){
+        //初始状态 [255, 0, 0] ，然后 b 增，r 减，g 增，b 减，r 增，g 减，如此循环
+        let step = 11; //色彩变化步长
+        if(r == 255){
+            if(g == 0){
+                b = b + step;
+                if(b > 255){
+                    r = 510 - b;
+                    b = 255;
+                }
+            }
+            if(b == 0){
+                g = g - step;
+                if(g < 0){
+                    b = -g;
+                    g = 0;
+                }
+            }
+        }
+        if(b == 255){
+            if(r == 0){
+                g = g + step;
+                if(g > 255){
+                    b = 510 - g;
+                    g = 255;
+                }
+            }
+            if(g == 0){
+                r = r - step;
+                if(r < 0){
+                    g = -r;
+                    r = 0;
+                }
+            }
+        }
+        if(g == 255){
+            if(b == 0){
+                r = r + step;
+                if(r > 255){
+                    g = 510 - r;
+                    r = 255;
+                }
+            }
+            if(r == 0){
+                b = b - step;
+                if(b < 0){
+                    r = -b;
+                    b = 0;
+                }
+            }
+        }
+        color[0] = r;
+        color[1] = g;
+        color[2] = b;
+    }
+    function modePlus(num, mode){
+        num++;
+        if(num === mode){num = 0;}
+        return num;
+    }
+    function drawPixel(measure,x,y){
+        ctx.fillStyle = 'rgb(' + color[0] + ', ' + color[1] + ', '+ color[2] + ')';
+        ctx.fillRect(37.5-measure*0.5+measure*x/225, 37.5-measure*0.5+measure*y/225, measure/225, measure/225);
+    }
+    function drawSmallYu(measure,x,y){
+        for(let i=0;i<15;i++){
+            for(let j=0;j<15;j++){
+                if(Yu(i,j)){drawPixel(measure,x*15+i,y*15+j);}
+            }
+        }
+    }
+    function drawSmallYi(measure,x,y){
+        for(let i=0;i<15;i++){
+            for(let j=0;j<15;j++){
+                if(Yi(i,j)){drawPixel(measure,x*15+i,y*15+j);}
+            }
+        }
+    }
+    function drawYi(measure){
+        for(let i=0;i<15;i++){
+            for(let j=0;j<15;j++){
+                if(Yi(i,j)){drawSmallYu(measure,i,j);}
+            }
+        }
+    }
+    function drawYu(measure){
+        for(let i=0;i<15;i++){
+            for(let j=0;j<15;j++){
+                if(Yu(i,j)){drawSmallYi(measure,i,j);}
+            }
+        }
+    }
+    function loop(){
+        if(slip === 0){
+            bodyBorderColor.style.borderColor = 'rgb(' + color[0] + ', ' + color[1] + ', '+ color[2] + ')';
+            ctx.clearRect(0,0,75,75);
+            if(state === 0){
+                drawYi(measure*Math.pow(magnifyRate,count));
+            }
+            else{
+                drawYu(measure*Math.pow(magnifyRate,count));
+            }
+            if(count>30){
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + 0.06*(count-30) +')';
+                ctx.fillRect(0, 0, measure, measure);
+            }
+            count = modePlus(count,40);
+            colorDifferent(color);
+            if(count === 0){state = 1 - state;}
+        }
+        slip = modePlus(slip,2);
+        requestAnimationFrame(loop);
+    }
+    loop();
+</script>
+</html>
